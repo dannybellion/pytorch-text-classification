@@ -25,36 +25,24 @@ def load_dataset(data_path: str) -> pd.DataFrame:
 
 
 def split_dataset(
-    df: pd.DataFrame, test_size: float = 0.2, val_size: float = 0.1, random_state: int = 42
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Split dataset into train, validation, and test sets.
+    df: pd.DataFrame, test_size: float = 0.2, random_state: int = 42
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Split dataset into train and test sets.
     
     Args:
         df: Input DataFrame
         test_size: Proportion of data for test set
-        val_size: Proportion of data for validation set
         random_state: Random seed for reproducibility
         
     Returns:
-        Tuple of (train_df, val_df, test_df)
+        Tuple of (train_df, test_df)
     """
-    # First split off the test set
-    train_val_df, test_df = train_test_split(
+    # Ensure balanced splits
+    train_df, test_df = train_test_split(
         df, test_size=test_size, random_state=random_state, stratify=df["label"]
     )
     
-    # Then split the train_val set into train and validation
-    # Calculate the validation size relative to the train_val set
-    relative_val_size = val_size / (1 - test_size)
-    
-    train_df, val_df = train_test_split(
-        train_val_df, 
-        test_size=relative_val_size, 
-        random_state=random_state,
-        stratify=train_val_df["label"]
-    )
-    
-    return train_df, val_df, test_df
+    return train_df, test_df
 
 
 class LoanDefaultDataset(Dataset):
@@ -108,32 +96,24 @@ class LoanDefaultDataset(Dataset):
 
 def create_dataloaders(
     train_df: pd.DataFrame,
-    val_df: pd.DataFrame,
     test_df: pd.DataFrame,
     tokenizer_name: str = "huawei-noah/TinyBERT_General_6L_768D",
     batch_size: int = 8
-) -> Tuple[DataLoader, DataLoader, DataLoader]:
-    """Create PyTorch DataLoaders for train, validation, and test sets.
+) -> Tuple[DataLoader, DataLoader]:
+    """Create PyTorch DataLoaders for train and test sets.
     
     Args:
         train_df: Training DataFrame
-        val_df: Validation DataFrame
         test_df: Test DataFrame
         tokenizer_name: Name of the pre-trained tokenizer
         batch_size: Batch size for DataLoaders
         
     Returns:
-        Tuple of (train_loader, val_loader, test_loader)
+        Tuple of (train_loader, test_loader)
     """
     train_dataset = LoanDefaultDataset(
         texts=train_df["text"].tolist(),
         labels=train_df["label"].tolist(),
-        tokenizer_name=tokenizer_name
-    )
-    
-    val_dataset = LoanDefaultDataset(
-        texts=val_df["text"].tolist(),
-        labels=val_df["label"].tolist(),
         tokenizer_name=tokenizer_name
     )
     
@@ -149,16 +129,10 @@ def create_dataloaders(
         shuffle=True
     )
     
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=batch_size,
-        shuffle=False
-    )
-    
     test_loader = DataLoader(
         test_dataset,
         batch_size=batch_size,
         shuffle=False
     )
     
-    return train_loader, val_loader, test_loader
+    return train_loader, test_loader

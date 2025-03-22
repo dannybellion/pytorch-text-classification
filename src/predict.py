@@ -1,11 +1,19 @@
 """Script for making predictions using a trained TinyBERT model."""
-import argparse
+from pathlib import Path
 from typing import Dict, List, Union
 
 import torch
 from transformers import AutoTokenizer
 
 from src.training.model import TinyBERTClassifier
+
+
+# Define prediction configuration here
+PREDICTION_CONFIG = {
+    "model_path": "models/best_model.pt",
+    "model_name": "huawei-noah/TinyBERT_General_6L_768D",
+    "input_file": None,  # Set to a file path to batch process texts, or None for interactive mode
+}
 
 
 def predict_text(
@@ -82,24 +90,33 @@ def batch_predict(
     return results
 
 
-def main(args):
+def main():
     """Main prediction function."""
     # Set device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     
+    # Check if model exists
+    model_path = Path(PREDICTION_CONFIG["model_path"])
+    if not model_path.exists():
+        print(f"Error: Model file not found at {model_path}")
+        print("Please train the model first by running: python -m src.main")
+        return
+    
     # Load model
-    model = TinyBERTClassifier(model_name=args.model_name)
-    model.load_state_dict(torch.load(args.model_path, map_location=device)["model_state_dict"])
+    model = TinyBERTClassifier(model_name=PREDICTION_CONFIG["model_name"])
+    model.load_state_dict(torch.load(model_path, map_location=device)["model_state_dict"])
     model.to(device)
     
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    tokenizer = AutoTokenizer.from_pretrained(PREDICTION_CONFIG["model_name"])
     
     # Get input text
-    if args.input_file:
-        with open(args.input_file, "r") as f:
+    if PREDICTION_CONFIG["input_file"]:
+        with open(PREDICTION_CONFIG["input_file"], "r") as f:
             texts = [line.strip() for line in f.readlines()]
+        
+        print(f"Making predictions for {len(texts)} texts from {PREDICTION_CONFIG['input_file']}...")
         results = batch_predict(model, tokenizer, texts, device)
         
         for i, result in enumerate(results):
@@ -109,25 +126,23 @@ def main(args):
             print()
     else:
         # Interactive mode
+        print("Loan Default Prediction - Interactive Mode")
+        print("Enter 'q' to quit")
+        print("-" * 50)
+        
         while True:
-            text = input("Enter text to classify (or 'q' to quit): ")
+            text = input("\nEnter business description: ")
             if text.lower() == 'q':
                 break
             
+            if len(text.split()) < 10:
+                print("Please enter a more detailed business description (at least 10 words)")
+                continue
+            
             result = predict_text(model, tokenizer, text, device)
-            print(f"Prediction: {result['prediction_text']}")
+            print(f"\nPrediction: {result['prediction_text']}")
             print(f"Probability: {result['probability']:.4f}")
-            print()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Make predictions with TinyBERT loan default classifier")
-    parser.add_argument("--model_path", type=str, required=True, 
-                        help="Path to the saved model checkpoint")
-    parser.add_argument("--model_name", type=str, default="huawei-noah/TinyBERT_General_6L_768D", 
-                        help="TinyBERT model name")
-    parser.add_argument("--input_file", type=str, 
-                        help="Path to file with input texts (one per line)")
-    
-    args = parser.parse_args()
-    main(args)
+    main()

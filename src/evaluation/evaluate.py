@@ -79,11 +79,11 @@ def evaluate_model(
     
     # Load and split dataset
     df = load_dataset(data_path)
-    train_df, val_df, test_df = split_dataset(df)
+    train_df, test_df = split_dataset(df)
     
     # Create dataloaders
-    _, _, test_loader = create_dataloaders(
-        train_df, val_df, test_df, tokenizer_name=model_name, batch_size=batch_size
+    _, test_loader = create_dataloaders(
+        train_df, test_df, tokenizer_name=model_name, batch_size=batch_size
     )
     
     # Initialize model
@@ -147,26 +147,3 @@ def evaluate_model(
     )
     
     print(f"ROC AUC: {roc_auc:.4f}")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Evaluate TinyBERT loan default classifier")
-    parser.add_argument("--model_path", type=str, required=True, 
-                        help="Path to the saved model checkpoint")
-    parser.add_argument("--data_path", type=str, default="data/loan_default_dataset.json", 
-                        help="Path to dataset JSON file")
-    parser.add_argument("--model_name", type=str, default="huawei-noah/TinyBERT_General_6L_768D", 
-                        help="TinyBERT model name")
-    parser.add_argument("--batch_size", type=int, default=8, 
-                        help="Batch size for evaluation")
-    parser.add_argument("--output_dir", type=str, default="evaluation_results", 
-                        help="Directory to save evaluation results")
-    
-    args = parser.parse_args()
-    evaluate_model(
-        model_path=args.model_path,
-        data_path=args.data_path,
-        model_name=args.model_name,
-        batch_size=args.batch_size,
-        output_dir=args.output_dir
-    )

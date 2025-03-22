@@ -52,13 +52,13 @@ def test_load_dataset(temp_dataset_file, sample_data):
 
 
 def test_split_dataset(sample_data):
-    """Test splitting dataset into train, validation, and test sets."""
+    """Test splitting dataset into train and test sets."""
     df = pd.DataFrame(sample_data)
     
-    train_df, val_df, test_df = split_dataset(df, test_size=0.2, val_size=0.2)
+    train_df, test_df = split_dataset(df, test_size=0.2)
     
     # Check if splits are created with the correct sizes
-    assert len(train_df) + len(val_df) + len(test_df) == len(df)
+    assert len(train_df) + len(test_df) == len(df)
     
     # Check if label distribution is maintained
     assert set(train_df["label"].unique()) == set(df["label"].unique())
@@ -93,15 +93,14 @@ def test_create_dataloaders(sample_data):
     """Test creating DataLoaders from dataset."""
     df = pd.DataFrame(sample_data)
     
-    train_df, val_df, test_df = split_dataset(df, test_size=0.2, val_size=0.2)
+    train_df, test_df = split_dataset(df, test_size=0.2)
     
-    train_loader, val_loader, test_loader = create_dataloaders(
-        train_df, val_df, test_df, batch_size=2
+    train_loader, test_loader = create_dataloaders(
+        train_df, test_df, batch_size=2
     )
     
     # Check if DataLoaders are created
     assert train_loader is not None
-    assert val_loader is not None
     assert test_loader is not None
     
     # Check batch size

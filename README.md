@@ -11,7 +11,7 @@ TinyBERT is a smaller, faster version of BERT that maintains comparable performa
 - Fine-tune TinyBERT for binary text classification
 - Dataset of 50 business descriptions with default/no-default labels
 - Complete pipeline from data preprocessing to model evaluation
-- Easy-to-use command-line interface
+- Easy-to-use interactive interface with hardcoded hyperparameters
 
 ## Installation
 
@@ -32,38 +32,52 @@ The dataset contains 50 entries, each with:
 
 ## Usage
 
-### Training
+### Training and Evaluation
+
+The hyperparameters are hardcoded at the top of `src/main.py`. You can run the project with:
 
 ```bash
-python -m src.main train \
-    --data_path data/loan_default_dataset.json \
-    --output_dir models \
-    --batch_size 8 \
-    --learning_rate 2e-5 \
-    --num_epochs 5
+python -m src.main
 ```
 
-### Evaluation
-
-```bash
-python -m src.main evaluate \
-    --model_path models/best_model.pt \
-    --data_path data/loan_default_dataset.json \
-    --output_dir evaluation_results
-```
+This will present you with a menu to:
+1. Train the model
+2. Evaluate the model
+3. Run both training and evaluation
 
 ### Making Predictions
 
+To make predictions on new texts, use:
+
 ```bash
-python -m src.predict \
-    --model_path models/best_model.pt \
-    --input_file your_input_file.txt
+python -m src.predict
 ```
 
-Or for interactive mode:
+This will start an interactive mode where you can enter business descriptions and get predictions.
 
-```bash
-python -m src.predict --model_path models/best_model.pt
+To batch process texts from a file, edit the `PREDICTION_CONFIG` at the top of `src/predict.py` to set the `input_file` parameter.
+
+## Customizing Hyperparameters
+
+To change hyperparameters, edit the `HYPERPARAMETERS` dictionary in `src/main.py`:
+
+```python
+HYPERPARAMETERS = {
+    # Data paths
+    "data_path": "data/loan_default_dataset.json",
+    "output_dir": "models",
+    "eval_output_dir": "evaluation_results",
+    
+    # Model configuration
+    "model_name": "huawei-noah/TinyBERT_General_6L_768D",
+    
+    # Training hyperparameters
+    "batch_size": 16,
+    "learning_rate": 3e-5,
+    "num_epochs": 10,
+    "test_size": 0.2,
+    "val_size": 0.1,
+}
 ```
 
 ## Project Structure
@@ -77,7 +91,7 @@ text-classification/
 │   ├── training/                  # Model definition and training
 │   ├── evaluation/                # Model evaluation
 │   ├── predict.py                 # Inference script
-│   └── main.py                    # CLI entry point
+│   └── main.py                    # Main entry point with hardcoded hyperparameters
 ├── tests/                         # Unit tests
 ├── pyproject.toml                 # Project configuration
 └── README.md                      # Project documentation

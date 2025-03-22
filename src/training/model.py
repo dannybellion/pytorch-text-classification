@@ -9,7 +9,10 @@ from transformers import AutoModelForSequenceClassification
 class TinyBERTClassifier(nn.Module):
     """TinyBERT-based classifier for loan default prediction."""
     
-    def __init__(self, model_name: str = "huawei-noah/TinyBERT_General_6L_768D", num_labels: int = 2):
+    def __init__(
+        self, 
+        model_name: str = "huawei-noah/TinyBERT_General_6L_768D", num_labels: int = 2
+        ):
         """Initialize the TinyBERT classifier.
         
         Args:

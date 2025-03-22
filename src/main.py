@@ -1,66 +1,79 @@
 """Main entry point for the loan default classification project."""
-import argparse
 from pathlib import Path
 
 from src.evaluation.evaluate import evaluate_model
 from src.training.train import main as train_main
+from src.training.train import argparse
+
+
+# Define all hyperparameters and paths here
+HYPERPARAMETERS = {
+    # Data paths
+    "data_path": "data/loan_default_dataset.json",
+    "output_dir": "models",
+    "eval_output_dir": "evaluation_results",
+    
+    # Model configuration
+    "model_name": "huawei-noah/TinyBERT_General_6L_768D",
+    
+    # Training hyperparameters
+    "batch_size": 16,
+    "learning_rate": 3e-5,
+    "num_epochs": 2,
+    "test_size": 0.4,
+}
+
+
+def train_model():
+    """Train the model with the predefined hyperparameters."""
+    print("Starting model training...")
+    
+    # Create a namespace object to mimic argparse behavior
+    args = argparse.Namespace()
+    args.data_path = HYPERPARAMETERS["data_path"]
+    args.model_name = HYPERPARAMETERS["model_name"]
+    args.output_dir = HYPERPARAMETERS["output_dir"]
+    args.batch_size = HYPERPARAMETERS["batch_size"]
+    args.learning_rate = HYPERPARAMETERS["learning_rate"]
+    args.num_epochs = HYPERPARAMETERS["num_epochs"]
+    args.test_size = HYPERPARAMETERS["test_size"]
+    
+    # Run training with predefined hyperparameters
+    train_main(args)
+    print(f"Training completed. Model saved to {HYPERPARAMETERS['output_dir']}")
+
+
+def evaluate_trained_model():
+    """Evaluate the best trained model."""
+    print("Starting model evaluation...")
+    
+    model_path = Path(HYPERPARAMETERS["output_dir"]) / "best_model.pt"
+    
+    # Ensure the model exists
+    if not model_path.exists():
+        print(f"Error: Model file not found at {model_path}")
+        print("Please train the model first by running: python -m src.main train")
+        return
+    
+    # Run evaluation
+    evaluate_model(
+        model_path=str(model_path),
+        data_path=HYPERPARAMETERS["data_path"],
+        model_name=HYPERPARAMETERS["model_name"],
+        batch_size=HYPERPARAMETERS["batch_size"],
+        output_dir=HYPERPARAMETERS["eval_output_dir"]
+    )
+    
+    print(f"Evaluation completed. Results saved to {HYPERPARAMETERS['eval_output_dir']}")
 
 
 def main():
-    """Parse arguments and execute the appropriate command."""
-    parser = argparse.ArgumentParser(
-        description="TinyBERT Loan Default Classification",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    
-    subparsers = parser.add_subparsers(dest="command", help="Command to run")
-    
-    # Train command
-    train_parser = subparsers.add_parser("train", help="Train the model")
-    train_parser.add_argument("--data_path", type=str, default="data/loan_default_dataset.json", 
-                            help="Path to dataset JSON file")
-    train_parser.add_argument("--model_name", type=str, default="huawei-noah/TinyBERT_General_6L_768D", 
-                            help="TinyBERT model name")
-    train_parser.add_argument("--output_dir", type=str, default="models", 
-                            help="Directory to save model checkpoints")
-    train_parser.add_argument("--batch_size", type=int, default=8, 
-                            help="Batch size for training and evaluation")
-    train_parser.add_argument("--learning_rate", type=float, default=2e-5, 
-                            help="Learning rate")
-    train_parser.add_argument("--num_epochs", type=int, default=5, 
-                            help="Number of training epochs")
-    train_parser.add_argument("--test_size", type=float, default=0.2, 
-                            help="Proportion of data for test set")
-    train_parser.add_argument("--val_size", type=float, default=0.1, 
-                            help="Proportion of data for validation set")
-    
-    # Evaluate command
-    eval_parser = subparsers.add_parser("evaluate", help="Evaluate the model")
-    eval_parser.add_argument("--model_path", type=str, required=True, 
-                           help="Path to the saved model checkpoint")
-    eval_parser.add_argument("--data_path", type=str, default="data/loan_default_dataset.json", 
-                           help="Path to dataset JSON file")
-    eval_parser.add_argument("--model_name", type=str, default="huawei-noah/TinyBERT_General_6L_768D", 
-                           help="TinyBERT model name")
-    eval_parser.add_argument("--batch_size", type=int, default=8, 
-                           help="Batch size for evaluation")
-    eval_parser.add_argument("--output_dir", type=str, default="evaluation_results", 
-                           help="Directory to save evaluation results")
-    
-    args = parser.parse_args()
-    
-    if args.command == "train":
-        train_main(args)
-    elif args.command == "evaluate":
-        evaluate_model(
-            model_path=args.model_path,
-            data_path=args.data_path,
-            model_name=args.model_name,
-            batch_size=args.batch_size,
-            output_dir=args.output_dir
-        )
-    else:
-        parser.print_help()
+    """Main function to either train or evaluate the model."""
+    print("TinyBERT Loan Default Classification")
+    print("-----------------------------------")
+
+    train_model()
+    evaluate_trained_model()
 
 
 if __name__ == "__main__":
