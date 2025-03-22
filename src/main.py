@@ -1,4 +1,5 @@
 """Main entry point for the loan default classification project."""
+from dataclasses import dataclass
 from pathlib import Path
 
 from src.evaluation.evaluate import evaluate_model
@@ -6,22 +7,26 @@ from src.training.train import main as train_main
 from src.training.train import argparse
 
 
-# Define all hyperparameters and paths here
-HYPERPARAMETERS = {
+@dataclass
+class Hyperparameters:
+    """Dataclass for storing model hyperparameters and configuration."""
     # Data paths
-    "data_path": "data/loan_default_dataset.json",
-    "output_dir": "models",
-    "eval_output_dir": "evaluation_results",
+    data_path: str = "data/loan_default_dataset.json"
+    output_dir: str = "models"
+    eval_output_dir: str = "evaluation_results"
     
     # Model configuration
-    "model_name": "huawei-noah/TinyBERT_General_6L_768D",
+    model_name: str = "huawei-noah/TinyBERT_General_6L_768D"
     
     # Training hyperparameters
-    "batch_size": 8,
-    "learning_rate": 3e-5,
-    "num_epochs": 5,
-    "test_size": 0.4,
-}
+    batch_size: int = 8
+    learning_rate: float = 3e-5
+    num_epochs: int = 2
+    test_size: float = 0.4
+
+
+# Create a single instance of the hyperparameters
+HYPERPARAMETERS = Hyperparameters()
 
 
 def train_model():
@@ -29,25 +34,18 @@ def train_model():
     print("Starting model training...")
     
     # Create a namespace object to mimic argparse behavior
-    args = argparse.Namespace()
-    args.data_path = HYPERPARAMETERS["data_path"]
-    args.model_name = HYPERPARAMETERS["model_name"]
-    args.output_dir = HYPERPARAMETERS["output_dir"]
-    args.batch_size = HYPERPARAMETERS["batch_size"]
-    args.learning_rate = HYPERPARAMETERS["learning_rate"]
-    args.num_epochs = HYPERPARAMETERS["num_epochs"]
-    args.test_size = HYPERPARAMETERS["test_size"]
+    args = argparse.Namespace(**vars(HYPERPARAMETERS))
     
     # Run training with predefined hyperparameters
     train_main(args)
-    print(f"Training completed. Model saved to {HYPERPARAMETERS['output_dir']}")
+    print(f"Training completed. Model saved to {HYPERPARAMETERS.output_dir}")
 
 
 def evaluate_trained_model():
     """Evaluate the best trained model."""
     print("Starting model evaluation...")
     
-    model_path = Path(HYPERPARAMETERS["output_dir"]) / "best_model.pt"
+    model_path = Path(HYPERPARAMETERS.output_dir) / "best_model.pt"
     
     # Ensure the model exists
     if not model_path.exists():
@@ -58,13 +56,14 @@ def evaluate_trained_model():
     # Run evaluation
     evaluate_model(
         model_path=str(model_path),
-        data_path=HYPERPARAMETERS["data_path"],
-        model_name=HYPERPARAMETERS["model_name"],
-        batch_size=HYPERPARAMETERS["batch_size"],
-        output_dir=HYPERPARAMETERS["eval_output_dir"]
+        data_path=HYPERPARAMETERS.data_path,
+        model_name=HYPERPARAMETERS.model_name,
+        batch_size=HYPERPARAMETERS.batch_size,
+        test_size=HYPERPARAMETERS.test_size,
+        output_dir=HYPERPARAMETERS.eval_output_dir
     )
     
-    print(f"Evaluation completed. Results saved to {HYPERPARAMETERS['eval_output_dir']}")
+    print(f"Evaluation completed. Results saved to {HYPERPARAMETERS.eval_output_dir}")
 
 
 def main():

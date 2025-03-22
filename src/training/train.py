@@ -165,7 +165,7 @@ def train(
         train_losses.append(train_loss)
         
         # Evaluate on test set (enable debug output only for first epoch)
-        test_loss, metrics = evaluate(model, test_loader, device, debug=(epoch == 0))
+        test_loss, metrics = evaluate(model, test_loader, device)
         test_losses.append(test_loss)
         test_metrics.append(metrics)
         

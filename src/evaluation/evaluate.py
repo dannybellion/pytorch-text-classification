@@ -58,6 +58,7 @@ def evaluate_model(
     data_path: str,
     model_name: str = "huawei-noah/TinyBERT_General_6L_768D",
     batch_size: int = 8,
+    test_size: float = 0.2,
     output_dir: str = "evaluation_results"
 ):
     """Evaluate the trained model and generate performance reports.
@@ -67,6 +68,7 @@ def evaluate_model(
         data_path: Path to the dataset JSON file
         model_name: Name of the pre-trained TinyBERT model
         batch_size: Batch size for evaluation
+        test_size: Proportion of data to use for testing
         output_dir: Directory to save evaluation results
     """
     # Set device
@@ -79,7 +81,7 @@ def evaluate_model(
     
     # Load and split dataset
     df = load_dataset(data_path)
-    train_df, test_df = split_dataset(df)
+    train_df, test_df = split_dataset(df, test_size=test_size)
     
     # Create dataloaders
     _, test_loader = create_dataloaders(
