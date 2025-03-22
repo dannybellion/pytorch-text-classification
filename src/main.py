@@ -31,6 +31,9 @@ class Hyperparameters:
     learning_rate: float = 3e-5
     num_epochs: int = 2
     test_size: float = 0.4
+    
+    # Performance settings
+    bf16: bool = False
 
 
 # Create a single instance of the hyperparameters

@@ -5,6 +5,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import torch.backends.mps
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -76,9 +77,16 @@ def evaluate_model(
         test_size: Proportion of data to use for testing
         output_dir: Directory to save evaluation results
     """
-    # Set device
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
+    # Set device - check for MPS (Apple Silicon) or CUDA
+    if torch.backends.mps.is_available():
+        device = torch.device("mps")
+        console.print("[bold green]Using Apple Silicon GPU (MPS)[/bold green]")
+    elif torch.cuda.is_available():
+        device = torch.device("cuda")
+        console.print("[bold green]Using NVIDIA GPU (CUDA)[/bold green]")
+    else:
+        device = torch.device("cpu")
+        console.print("[yellow]Using CPU[/yellow]")
     
     # Create output directory
     output_dir = Path(output_dir)
@@ -93,9 +101,18 @@ def evaluate_model(
         train_df, test_df, tokenizer_name=model_name, batch_size=batch_size
     )
     
+    # Load model checkpoint
+    checkpoint = torch.load(model_path, map_location=device)
+    
+    # Check if model was trained with bf16
+    use_bf16 = checkpoint.get("bf16", False)
+    
+    if use_bf16 and device.type == "mps":
+        console.print("[bold cyan]Model was trained with BF16, using mixed precision for evaluation[/bold cyan]")
+    
     # Initialize model
     model = TinyBERTClassifier(model_name=model_name)
-    model.load_state_dict(torch.load(model_path, map_location=device)["model_state_dict"])
+    model.load_state_dict(checkpoint["model_state_dict"])
     model.to(device)
     model.eval()
     
@@ -110,8 +127,16 @@ def evaluate_model(
             attention_mask = batch["attention_mask"].to(device)
             labels = batch["label"].to(device)
             
-            outputs = model(input_ids, attention_mask)
-            logits = outputs["logits"]
+            # Use appropriate precision based on training settings
+            if use_bf16 and device.type == "mps":
+                # Convert tensors to bfloat16 for Apple Silicon
+                attention_mask_bf16 = attention_mask.to(torch.bfloat16)
+                with torch.autocast(device_type="mps", dtype=torch.bfloat16):
+                    outputs = model(input_ids, attention_mask)
+                    logits = outputs["logits"]
+            else:
+                outputs = model(input_ids, attention_mask)
+                logits = outputs["logits"]
             
             probs = torch.softmax(logits, dim=1)
             preds = torch.argmax(logits, dim=1)
