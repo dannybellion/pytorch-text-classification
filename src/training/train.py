@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, confusion_matrix
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -62,7 +62,6 @@ def evaluate(
     model: nn.Module,
     dataloader: DataLoader,
     device: torch.device,
-    debug: bool = True
 ) -> Tuple[float, Dict[str, float]]:
     """Evaluate the model.
     
@@ -80,17 +79,6 @@ def evaluate(
     all_preds = []
     all_labels = []
     all_probs = []
-    
-    # Get original texts for debugging
-    test_texts = []
-    if debug and hasattr(dataloader.dataset, 'texts'):
-        test_texts = dataloader.dataset.texts
-    
-    # Print test dataset size
-    if debug:
-        print(f"\nTest dataset size: {len(dataloader.dataset)}")
-        print(f"Number of batches: {len(dataloader)}")
-        print(f"Batch size: {dataloader.batch_size}")
     
     with torch.no_grad():
         for batch in tqdm(dataloader, desc="Evaluating"):
@@ -112,33 +100,6 @@ def evaluate(
             all_probs.extend(probs[:, 1].cpu().numpy())  # Probability of the positive class
             
             total_loss += loss.item()
-    
-    # Debug output
-    if debug:
-        print("\n===== Debug Information =====")
-        print(f"Number of samples evaluated: {len(all_preds)}")
-        print(f"Unique predicted labels: {np.unique(all_preds)} (counts: {np.bincount(all_preds)})")
-        print(f"Unique true labels: {np.unique(all_labels)} (counts: {np.bincount(all_labels)})")
-        
-        # Show detailed predictions for up to 10 samples
-        print("\nDetailed predictions (sample of test data):")
-        indices = np.random.choice(len(all_preds), min(10, len(all_preds)), replace=False)
-        for i in indices:
-            if i < len(test_texts):
-                text_preview = test_texts[i][:100] + "..." if len(test_texts[i]) > 100 else test_texts[i]
-                print(f"\nText: {text_preview}")
-            print(f"True label: {all_labels[i]}, Predicted label: {all_preds[i]}, Probability: {all_probs[i]:.4f}")
-            
-        # Print confusion matrix
-        cm = confusion_matrix(all_labels, all_preds)
-        print("\nConfusion Matrix:")
-        print(cm)
-        
-        # Print classification report
-        from sklearn.metrics import classification_report
-        report = classification_report(all_labels, all_preds, target_names=["Not Defaulted", "Defaulted"])
-        print("\nClassification Report:")
-        print(report)
     
     # Calculate metrics
     accuracy = accuracy_score(all_labels, all_preds)
@@ -273,24 +234,3 @@ def main(args):
         model, train_loader, test_loader, optimizer, device, 
         num_epochs=args.num_epochs, output_dir=output_dir
     )
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Train TinyBERT for loan default classification")
-    parser.add_argument("--data_path", type=str, default="data/loan_default_dataset.json", 
-                        help="Path to dataset JSON file")
-    parser.add_argument("--model_name", type=str, default="huawei-noah/TinyBERT_General_6L_768D", 
-                        help="TinyBERT model name")
-    parser.add_argument("--output_dir", type=str, default="models", 
-                        help="Directory to save model checkpoints")
-    parser.add_argument("--batch_size", type=int, default=32, 
-                        help="Batch size for training and evaluation")
-    parser.add_argument("--learning_rate", type=float, default=2e-5, 
-                        help="Learning rate")
-    parser.add_argument("--num_epochs", type=int, default=5, 
-                        help="Number of training epochs")
-    parser.add_argument("--test_size", type=float, default=0.4, 
-                        help="Proportion of data for test set")
-    
-    args = parser.parse_args()
-    main(args)
