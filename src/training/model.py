@@ -1,9 +1,15 @@
 """TinyBERT model for text classification."""
+import logging
+import warnings
 from typing import Dict, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
-from transformers import AutoModelForSequenceClassification
+from transformers import AutoModelForSequenceClassification, logging as transformers_logging
+
+# Suppress specific Hugging Face warnings
+transformers_logging.set_verbosity_error()
+warnings.filterwarnings("ignore", message="Some weights of BertForSequenceClassification were not initialized")
 
 
 class TinyBERTClassifier(nn.Module):

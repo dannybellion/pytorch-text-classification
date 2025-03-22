@@ -7,12 +7,23 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from rich.console import Console
+from rich.progress import (
+    BarColumn,
+    Progress,
+    TextColumn,
+    TimeElapsedColumn,
+    MofNCompleteColumn
+)
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from src.data_preprocessing.dataset import create_dataloaders, load_dataset, split_dataset
 from src.training.model import TinyBERTClassifier
+
+# Create a console for rich output
+console = Console()
 
 
 def train_epoch(
@@ -34,26 +45,41 @@ def train_epoch(
     """
     model.train()
     total_loss = 0
+    total_batches = len(dataloader)
     
-    for batch in tqdm(dataloader, desc="Training"):
-        # Move batch to device
-        input_ids = batch["input_ids"].to(device)
-        attention_mask = batch["attention_mask"].to(device)
-        labels = batch["label"].to(device)
+    # Progress display that doesn't flicker
+    progress = Progress(
+        TextColumn("[bold green]Training[/bold green]"),
+        BarColumn(bar_width=40),
+        MofNCompleteColumn(),
+        TimeElapsedColumn(),
+        console=console,
+        refresh_per_second=1  # Low refresh rate to avoid flickering
+    )
+    
+    with progress:
+        task = progress.add_task("Training", total=total_batches)
         
-        # Zero gradients
-        optimizer.zero_grad()
-        
-        # Forward pass
-        loss, _ = model(input_ids, attention_mask, labels)
-        
-        # Backward pass
-        loss.backward()
-        
-        # Update weights
-        optimizer.step()
-        
-        total_loss += loss.item()
+        for batch in dataloader:
+            # Move batch to device
+            input_ids = batch["input_ids"].to(device)
+            attention_mask = batch["attention_mask"].to(device)
+            labels = batch["label"].to(device)
+            
+            # Zero gradients
+            optimizer.zero_grad()
+            
+            # Forward pass
+            loss, _ = model(input_ids, attention_mask, labels)
+            
+            # Backward pass
+            loss.backward()
+            
+            # Update weights
+            optimizer.step()
+            
+            total_loss += loss.item()
+            progress.update(task, advance=1)
     
     return total_loss / len(dataloader)
 
@@ -69,7 +95,6 @@ def evaluate(
         model: The model to evaluate
         dataloader: Evaluation data loader
         device: Device to evaluate on
-        debug: Whether to print detailed debug information
         
     Returns:
         Tuple of (average loss, metrics dict)
@@ -79,27 +104,42 @@ def evaluate(
     all_preds = []
     all_labels = []
     all_probs = []
+    total_batches = len(dataloader)
+    
+    # Progress display that doesn't flicker
+    progress = Progress(
+        TextColumn("[bold blue]Evaluating[/bold blue]"),
+        BarColumn(bar_width=40),
+        MofNCompleteColumn(),
+        TimeElapsedColumn(),
+        console=console,
+        refresh_per_second=1  # Low refresh rate to avoid flickering
+    )
     
     with torch.no_grad():
-        for batch in tqdm(dataloader, desc="Evaluating"):
-            # Move batch to device
-            input_ids = batch["input_ids"].to(device)
-            attention_mask = batch["attention_mask"].to(device)
-            labels = batch["label"].to(device)
+        with progress:
+            task = progress.add_task("Evaluating", total=total_batches)
             
-            # Forward pass
-            loss, logits = model(input_ids, attention_mask, labels)
-            
-            # Get predictions
-            probs = torch.softmax(logits, dim=1)
-            preds = torch.argmax(logits, dim=1).cpu().numpy()
-            labels_np = labels.cpu().numpy()
-            
-            all_preds.extend(preds)
-            all_labels.extend(labels_np)
-            all_probs.extend(probs[:, 1].cpu().numpy())  # Probability of the positive class
-            
-            total_loss += loss.item()
+            for batch in dataloader:
+                # Move batch to device
+                input_ids = batch["input_ids"].to(device)
+                attention_mask = batch["attention_mask"].to(device)
+                labels = batch["label"].to(device)
+                
+                # Forward pass
+                loss, logits = model(input_ids, attention_mask, labels)
+                
+                # Get predictions
+                probs = torch.softmax(logits, dim=1)
+                preds = torch.argmax(logits, dim=1).cpu().numpy()
+                labels_np = labels.cpu().numpy()
+                
+                all_preds.extend(preds)
+                all_labels.extend(labels_np)
+                all_probs.extend(probs[:, 1].cpu().numpy())  # Probability of the positive class
+                
+                total_loss += loss.item()
+                progress.update(task, advance=1)
     
     # Calculate metrics
     accuracy = accuracy_score(all_labels, all_preds)
@@ -158,19 +198,22 @@ def train(
     best_f1 = 0.0
     
     for epoch in range(num_epochs):
-        print(f"Epoch {epoch + 1}/{num_epochs}")
+        console.print(f"\n[bold cyan]Epoch {epoch + 1}/{num_epochs}[/bold cyan]")
         
         # Train
         train_loss = train_epoch(model, train_loader, optimizer, device)
         train_losses.append(train_loss)
         
-        # Evaluate on test set (enable debug output only for first epoch)
+        # Evaluate on test set
         test_loss, metrics = evaluate(model, test_loader, device)
         test_losses.append(test_loss)
         test_metrics.append(metrics)
         
-        print(f"Train Loss: {train_loss:.4f}, Test Loss: {test_loss:.4f}")
-        print(f"Test Metrics: {metrics}")
+        # Display metrics in a formatted way
+        console.print(f"[bold white on black]╔══════════════════════════════════════╗[/]")
+        console.print(f"[bold white on black]║ [green]Train Loss:[/green] {train_loss:.4f}  [blue]Test Loss:[/blue] {test_loss:.4f} ║[/]")
+        console.print(f"[bold white on black]╚══════════════════════════════════════╝[/]")
+        console.print(f"[yellow]Metrics:[/yellow] Accuracy={metrics['accuracy']:.4f}, F1={metrics['f1']:.4f}, Precision={metrics['precision']:.4f}, Recall={metrics['recall']:.4f}")
         
         # Save best model
         if metrics["f1"] > best_f1:
@@ -185,7 +228,7 @@ def train(
                 },
                 output_dir / "best_model.pt"
             )
-            print(f"Saved best model with F1: {best_f1:.4f}")
+            console.print(f"[bold green]✓[/bold green] Saved best model with F1: {best_f1:.4f}")
         
         # Save latest model
         torch.save(

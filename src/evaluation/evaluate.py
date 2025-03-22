@@ -5,11 +5,17 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
 from torch.utils.data import DataLoader
 
 from src.data_preprocessing.dataset import create_dataloaders, load_dataset, split_dataset
 from src.training.model import TinyBERTClassifier
+
+# Create a console for rich output
+console = Console()
 
 
 def plot_confusion_matrix(cm, classes, output_path, normalize=False, title='Confusion matrix'):
@@ -120,16 +126,56 @@ def evaluate_model(
     
     # Classification report
     report = classification_report(all_labels, all_preds, target_names=class_names)
-    print("Classification Report:")
-    print(report)
+    report_dict = classification_report(all_labels, all_preds, target_names=class_names, output_dict=True)
+    
+    # Create a rich table for classification report
+    table = Table(title="Classification Report")
+    table.add_column("Class", style="cyan")
+    table.add_column("Precision", style="magenta")
+    table.add_column("Recall", style="green")
+    table.add_column("F1-Score", style="yellow")
+    table.add_column("Support", style="blue")
+    
+    for class_name in class_names:
+        table.add_row(
+            class_name,
+            f"{report_dict[class_name]['precision']:.4f}",
+            f"{report_dict[class_name]['recall']:.4f}",
+            f"{report_dict[class_name]['f1-score']:.4f}",
+            str(int(report_dict[class_name]['support']))
+        )
+    
+    # Add average row
+    table.add_row(
+        "Avg / Total",
+        f"{report_dict['macro avg']['precision']:.4f}",
+        f"{report_dict['macro avg']['recall']:.4f}",
+        f"{report_dict['macro avg']['f1-score']:.4f}",
+        str(int(report_dict['macro avg']['support']))
+    )
+    
+    console.print(table)
     
     with open(output_dir / "classification_report.txt", "w") as f:
         f.write(report)
     
     # Confusion matrix
     cm = confusion_matrix(all_labels, all_preds)
-    print("Confusion Matrix:")
-    print(cm)
+    
+    # Create a rich table for confusion matrix
+    cm_table = Table(title="Confusion Matrix")
+    cm_table.add_column("", style="bold")
+    for class_name in class_names:
+        cm_table.add_column(f"Pred: {class_name}", style="cyan")
+    
+    for i, class_name in enumerate(class_names):
+        row = [f"True: {class_name}"]
+        for j in range(len(class_names)):
+            cell_style = "green" if i == j else "red"
+            row.append(f"[{cell_style}]{cm[i, j]}[/{cell_style}]")
+        cm_table.add_row(*row)
+    
+    console.print(cm_table)
     
     plot_confusion_matrix(
         cm, 
@@ -148,4 +194,9 @@ def evaluate_model(
         output_path=output_dir / "roc_curve.png"
     )
     
-    print(f"ROC AUC: {roc_auc:.4f}")
+    # Print ROC AUC with rich formatting
+    console.print(Panel(
+        f"[bold yellow]ROC AUC:[/bold yellow] [cyan]{roc_auc:.4f}[/cyan]",
+        title="Area Under ROC Curve",
+        border_style="yellow"
+    ))

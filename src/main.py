@@ -2,9 +2,17 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from rich.console import Console
+from rich.panel import Panel
+from rich.progress import TextColumn
+from rich.table import Table
+
 from src.evaluation.evaluate import evaluate_model
 from src.training.train import main as train_main
 from src.training.train import argparse
+
+# Create a console for rich output
+console = Console()
 
 
 @dataclass
@@ -31,26 +39,40 @@ HYPERPARAMETERS = Hyperparameters()
 
 def train_model():
     """Train the model with the predefined hyperparameters."""
-    print("Starting model training...")
+    console.print(Panel("[bold green]Starting model training...[/bold green]", 
+                       title="Training", border_style="green"))
+    
+    # Display hyperparameters in a table
+    table = Table(title="Training Configuration")
+    table.add_column("Parameter", style="cyan")
+    table.add_column("Value", style="yellow")
+    
+    for key, value in vars(HYPERPARAMETERS).items():
+        table.add_row(key, str(value))
+    
+    console.print(table)
     
     # Create a namespace object to mimic argparse behavior
     args = argparse.Namespace(**vars(HYPERPARAMETERS))
     
     # Run training with predefined hyperparameters
     train_main(args)
-    print(f"Training completed. Model saved to {HYPERPARAMETERS.output_dir}")
+    
+    console.print(f"\n[bold green]✓[/bold green] Training completed. Model saved to [bold]{HYPERPARAMETERS.output_dir}[/bold]")
 
 
 def evaluate_trained_model():
     """Evaluate the best trained model."""
-    print("Starting model evaluation...")
+    console.print("\n\n")
+    console.print(Panel("[bold blue]Starting model evaluation...[/bold blue]", 
+                       title="Evaluation", border_style="blue"))
     
     model_path = Path(HYPERPARAMETERS.output_dir) / "best_model.pt"
     
     # Ensure the model exists
     if not model_path.exists():
-        print(f"Error: Model file not found at {model_path}")
-        print("Please train the model first by running: python -m src.main")
+        console.print(f"[bold red]Error:[/bold red] Model file not found at {model_path}")
+        console.print("[yellow]Please train the model first by running:[/yellow] python -m src.main")
         return
     
     # Run evaluation
@@ -63,13 +85,16 @@ def evaluate_trained_model():
         output_dir=HYPERPARAMETERS.eval_output_dir
     )
     
-    print(f"Evaluation completed. Results saved to {HYPERPARAMETERS.eval_output_dir}")
+    console.print(f"[bold blue]✓[/bold blue] Evaluation completed. Results saved to [bold]{HYPERPARAMETERS.eval_output_dir}[/bold]")
 
 
 def main():
     """Main function to either train or evaluate the model."""
-    print("TinyBERT Loan Default Classification")
-    print("-----------------------------------")
+    console.print(Panel.fit(
+        "[bold magenta]TinyBERT Loan Default Classification[/bold magenta]",
+        subtitle="Fine-tuned text classification model",
+        border_style="magenta"
+    ))
 
     train_model()
     evaluate_trained_model()
