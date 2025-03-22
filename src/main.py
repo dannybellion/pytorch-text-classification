@@ -17,9 +17,9 @@ HYPERPARAMETERS = {
     "model_name": "huawei-noah/TinyBERT_General_6L_768D",
     
     # Training hyperparameters
-    "batch_size": 16,
+    "batch_size": 8,
     "learning_rate": 3e-5,
-    "num_epochs": 2,
+    "num_epochs": 5,
     "test_size": 0.4,
 }
 
@@ -52,7 +52,7 @@ def evaluate_trained_model():
     # Ensure the model exists
     if not model_path.exists():
         print(f"Error: Model file not found at {model_path}")
-        print("Please train the model first by running: python -m src.main train")
+        print("Please train the model first by running: python -m src.main")
         return
     
     # Run evaluation
