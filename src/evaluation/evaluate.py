@@ -9,7 +9,6 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
-from torch.utils.data import DataLoader
 
 from src.data_preprocessing.dataset import create_dataloaders, load_dataset, split_dataset
 from src.training.model import TinyBERTClassifier

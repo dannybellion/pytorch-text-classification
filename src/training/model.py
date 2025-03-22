@@ -1,5 +1,4 @@
 """TinyBERT model for text classification."""
-import logging
 import warnings
 from typing import Dict, Optional, Tuple, Union
 

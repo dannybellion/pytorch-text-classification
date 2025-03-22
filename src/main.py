@@ -92,7 +92,6 @@ def main():
     """Main function to either train or evaluate the model."""
     console.print(Panel.fit(
         "[bold magenta]TinyBERT Loan Default Classification[/bold magenta]",
-        subtitle="Fine-tuned text classification model",
         border_style="magenta"
     ))
 

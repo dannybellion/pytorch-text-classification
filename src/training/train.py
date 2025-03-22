@@ -17,7 +17,6 @@ from rich.progress import (
 )
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from torch.utils.data import DataLoader
-from tqdm import tqdm
 
 from src.data_preprocessing.dataset import create_dataloaders, load_dataset, split_dataset
 from src.training.model import TinyBERTClassifier
@@ -47,14 +46,13 @@ def train_epoch(
     total_loss = 0
     total_batches = len(dataloader)
     
-    # Progress display that doesn't flicker
     progress = Progress(
         TextColumn("[bold green]Training[/bold green]"),
         BarColumn(bar_width=40),
         MofNCompleteColumn(),
         TimeElapsedColumn(),
         console=console,
-        refresh_per_second=1  # Low refresh rate to avoid flickering
+        refresh_per_second=1
     )
     
     with progress:
