@@ -1,25 +1,36 @@
-"""Evaluation script for the TinyBERT classifier."""
-import argparse
+"""Evaluation functions for the TinyBERT classifier."""
 from pathlib import Path
+from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
-import torch
-import torch.backends.mps
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
-
-from src.data_preprocessing.dataset import create_dataloaders, load_dataset, split_dataset
-from src.training.model import TinyBERTClassifier
+from sklearn.metrics import (
+    accuracy_score,
+    auc,
+    classification_report,
+    confusion_matrix,
+    precision_recall_fscore_support,
+    roc_curve,
+)
+from torch.utils.data import DataLoader
 
 # Create a console for rich output
 console = Console()
 
 
 def plot_confusion_matrix(cm, classes, output_path, normalize=False, title='Confusion matrix'):
-    """Plot confusion matrix."""
+    """Plot confusion matrix.
+    
+    Args:
+        cm: Confusion matrix
+        classes: List of class names
+        output_path: Path to save the plot
+        normalize: Whether to normalize the confusion matrix
+        title: Title for the plot
+    """
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
     
@@ -46,7 +57,14 @@ def plot_confusion_matrix(cm, classes, output_path, normalize=False, title='Conf
 
 
 def plot_roc_curve(fpr, tpr, roc_auc, output_path):
-    """Plot ROC curve."""
+    """Plot ROC curve.
+    
+    Args:
+        fpr: False positive rates
+        tpr: True positive rates 
+        roc_auc: Area under the ROC curve
+        output_path: Path to save the plot
+    """
     plt.figure(figsize=(8, 6))
     plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (area = {roc_auc:.2f})')
     plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
@@ -59,94 +77,62 @@ def plot_roc_curve(fpr, tpr, roc_auc, output_path):
     plt.savefig(output_path)
 
 
-def evaluate_model(
-    model_path: str,
-    data_path: str,
-    model_name: str = "huawei-noah/TinyBERT_General_6L_768D",
-    batch_size: int = 8,
-    test_size: float = 0.2,
-    output_dir: str = "evaluation_results"
-):
-    """Evaluate the trained model and generate performance reports.
+def get_basic_metrics(all_labels: List[int], all_preds: List[int]) -> Dict[str, float]:
+    """Calculate basic classification metrics.
     
     Args:
-        model_path: Path to the saved model checkpoint
-        data_path: Path to the dataset JSON file
-        model_name: Name of the pre-trained TinyBERT model
-        batch_size: Batch size for evaluation
-        test_size: Proportion of data to use for testing
-        output_dir: Directory to save evaluation results
+        all_labels: List of ground truth labels
+        all_preds: List of predicted labels
+        
+    Returns:
+        Dictionary containing accuracy, precision, recall, and F1 score
     """
-    # Set device - check for MPS (Apple Silicon) or CUDA
-    if torch.backends.mps.is_available():
-        device = torch.device("mps")
-        console.print("[bold green]Using Apple Silicon GPU (MPS)[/bold green]")
-    elif torch.cuda.is_available():
-        device = torch.device("cuda")
-        console.print("[bold green]Using NVIDIA GPU (CUDA)[/bold green]")
-    else:
-        device = torch.device("cpu")
-        console.print("[yellow]Using CPU[/yellow]")
+    accuracy = accuracy_score(all_labels, all_preds)
+    try:
+        precision, recall, f1, _ = precision_recall_fscore_support(
+            all_labels, all_preds, average="binary", zero_division=0
+        )
+    except Exception as e:
+        console.print(f"[yellow]Warning:[/yellow] Error calculating precision/recall: {e}")
+        # If only one class is present, set metrics accordingly
+        if len(np.unique(all_preds)) == 1:
+            if np.unique(all_preds)[0] == np.unique(all_labels)[0]:
+                precision, recall, f1 = 1.0, 1.0, 1.0
+            else:
+                precision, recall, f1 = 0.0, 0.0, 0.0
     
-    # Create output directory
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    return {
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1
+    }
+
+
+def generate_detailed_evaluation(
+    all_labels: List[int], 
+    all_preds: List[int], 
+    all_probs: List[float], 
+    output_dir: Path,
+    class_names: List[str] = ["Not Defaulted", "Defaulted"]
+) -> None:
+    """Generate detailed evaluation reports and visualizations.
     
-    # Load and split dataset
-    df = load_dataset(data_path)
-    train_df, test_df = split_dataset(df, test_size=test_size)
-    
-    # Create dataloaders
-    _, test_loader = create_dataloaders(
-        train_df, test_df, tokenizer_name=model_name, batch_size=batch_size
+    Args:
+        all_labels: List of ground truth labels
+        all_preds: List of predicted labels
+        all_probs: List of prediction probabilities
+        output_dir: Directory to save results
+        class_names: List of class names
+    """
+    console.print("\n")
+    console.print(
+        Panel("[bold green]Starting model evaluation...[/bold green]", 
+        title="Evaluation", border_style="green")
     )
     
-    # Load model checkpoint
-    checkpoint = torch.load(model_path, map_location=device)
-    
-    # Check if model was trained with bf16
-    use_bf16 = checkpoint.get("bf16", False)
-    
-    if use_bf16 and device.type == "mps":
-        console.print("[bold cyan]Model was trained with BF16, using mixed precision for evaluation[/bold cyan]")
-    
-    # Initialize model
-    model = TinyBERTClassifier(model_name=model_name)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    model.to(device)
-    model.eval()
-    
-    # Collect predictions
-    all_preds = []
-    all_labels = []
-    all_probs = []
-    
-    with torch.no_grad():
-        for batch in test_loader:
-            input_ids = batch["input_ids"].to(device)
-            attention_mask = batch["attention_mask"].to(device)
-            labels = batch["label"].to(device)
-            
-            # Use appropriate precision based on training settings
-            if use_bf16 and device.type == "mps":
-                # Convert tensors to bfloat16 for Apple Silicon
-                attention_mask_bf16 = attention_mask.to(torch.bfloat16)
-                with torch.autocast(device_type="mps", dtype=torch.bfloat16):
-                    outputs = model(input_ids, attention_mask)
-                    logits = outputs["logits"]
-            else:
-                outputs = model(input_ids, attention_mask)
-                logits = outputs["logits"]
-            
-            probs = torch.softmax(logits, dim=1)
-            preds = torch.argmax(logits, dim=1)
-            
-            all_probs.extend(probs[:, 1].cpu().numpy())
-            all_preds.extend(preds.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
-    
-    # Calculate metrics
-    class_names = ["Not Defaulted", "Defaulted"]
+    # Ensure output directory exists
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     # Classification report
     report = classification_report(all_labels, all_preds, target_names=class_names)
@@ -201,6 +187,7 @@ def evaluate_model(
     
     console.print(cm_table)
     
+    # Plot and save confusion matrix
     plot_confusion_matrix(
         cm, 
         classes=class_names, 
@@ -211,6 +198,7 @@ def evaluate_model(
     fpr, tpr, _ = roc_curve(all_labels, all_probs)
     roc_auc = auc(fpr, tpr)
     
+    # Plot and save ROC curve
     plot_roc_curve(
         fpr, 
         tpr, 

@@ -17,16 +17,16 @@ TinyBERT is a smaller, faster version of BERT that maintains comparable performa
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/text-classification.git
+git clone https://github.com/dannybellion/text-classification.git
 cd text-classification
 
 # Install the package and dependencies
-pip install -e .
+uv sync
 ```
 
 ## Dataset
 
-The dataset contains 50 entries, each with:
+Dummy dataset contains a list of 80 entries, each with:
 - `text`: Business description (100-200 words)
 - `label`: Binary label indicating loan default status (1 = default, 0 = no default)
 
@@ -40,10 +40,13 @@ The hyperparameters are hardcoded at the top of `src/main.py`. You can run the p
 python -m src.main
 ```
 
-This will present you with a menu to:
-1. Train the model
-2. Evaluate the model
-3. Run both training and evaluation
+This will:
+
+**Train the model**
+Run through the specified number of epochs, saving the best and most recent models after each epoch. Print out the training and validation loss for each epoch as well as other standard performance metrics.
+
+**Evaluate the model**
+Load the best model and evaluate it on the test set. Print out the test loss and other standard performance metrics.
 
 ### Making Predictions
 
@@ -96,13 +99,3 @@ text-classification/
 ├── pyproject.toml                 # Project configuration
 └── README.md                      # Project documentation
 ```
-
-## Run Tests
-
-```bash
-pytest
-```
-
-## License
-
-MIT

@@ -5,7 +5,7 @@
     },
     {
         "text": "Despite initial promising performance, the business has experienced three consecutive quarters of declining revenue. Cash flow issues have resulted in delayed payments to vendors and staff. The company recently laid off 30% of its workforce to cut costs. Their main product line has faced increasing competition, with market share dropping from 23% to 9% in eighteen months. The board has experienced significant turnover, with three directors resigning in the past year. Several key clients have not renewed contracts, citing concerns about service quality.",
-        "label": 1
+        "label": 0
     },
     {
         "text": "The startup has secured Series B funding of $15 million, led by a prominent venture capital firm. Their innovative technology has received industry recognition, including two prestigious innovation awards. Customer acquisition costs have decreased by 40% while retention rates have improved to 92%. The management team consists of industry veterans with successful exit experience. Their intellectual property portfolio includes five granted patents and seven pending applications. The company has established strategic partnerships with three Fortune 500 companies.",
@@ -29,7 +29,7 @@
     },
     {
         "text": "Quarterly financial reports show the company operating at a loss for six consecutive periods. The business has exhausted its line of credit and failed to meet covenant requirements with existing lenders. Management has attempted three different business models in the past two years without achieving sustainable results. Key technical staff have departed for competitors, leaving critical knowledge gaps. The company faces multiple unresolved lawsuits from former clients claiming breach of contract. Their industry is experiencing significant disruption from new technologies.",
-        "label": 1
+        "label": 0
     },
     {
         "text": "The agricultural business has implemented advanced irrigation systems that reduce water usage by 40% while improving crop yields. Their diversified crop rotation strategy mitigates weather-related risks and market fluctuations. The company has established long-term contracts with food processors that guarantee minimum purchase volumes. They've invested in renewable energy, with solar installations that cover 70% of operational electricity needs. The business maintains comprehensive insurance coverage for equipment, crops, and weather events.",
@@ -69,7 +69,7 @@
     },
     {
         "text": "The fitness chain has been unable to adapt to changing consumer preferences for boutique and virtual fitness options. Membership has declined by 35% while operating costs remain largely fixed. The company signed long-term leases at premium rates prior to market corrections. Their equipment is outdated compared to competitors, requiring significant capital investment to modernize. The business has accumulated substantial debt through multiple rounds of refinancing. Customer acquisition costs have increased threefold while retention rates continue to decline.",
-        "label": 1
+        "label": 0
     },
     {
         "text": "The consulting firm specializes in a high-demand sector with projected growth of 22% annually. Their team includes recognized thought leaders who regularly publish in industry journals. The company operates with minimal overhead, maintaining a flexible remote work model. Client relationships are characterized by repeat engagements, with 78% of revenue coming from existing clients. They've developed proprietary methodologies that deliver measurable ROI for clients. The business has no debt and maintains cash reserves equivalent to six months of operating expenses.",
@@ -93,7 +93,7 @@
     },
     {
         "text": "The furniture manufacturer has been slow to adapt to e-commerce, with online sales representing only 7% of revenue. Their production relies heavily on imported materials affected by recent supply chain disruptions and tariff increases. The company's designs have not evolved to match contemporary consumer preferences. Warehouse facilities are operating with outdated systems, increasing fulfillment costs and error rates. The business has experienced high turnover in sales staff, disrupting retailer relationships. Cash flow issues have resulted in inconsistent inventory replenishment.",
-        "label": 1
+        "label": 0
     },
     {
         "text": "The educational technology company has achieved product-market fit with consistently positive user feedback. Their subscription model generates predictable revenue with 89% annual renewal rates from institutional clients. The development team has created a scalable platform architecture that accommodates rapid user growth. They've established partnerships with major educational publishers, expanding content offerings without development costs. The business has a clear pathway to profitability with decreasing customer acquisition costs and increasing lifetime value.",
@@ -117,7 +117,7 @@
     },
     {
         "text": "Financial records indicate the trucking company has been operating at a loss for seven consecutive quarters. Their fleet consists of aging vehicles with increasing maintenance requirements and poor fuel efficiency. Driver recruitment and retention have become critical issues with vacancy rates approaching 40%. The business lacks the technology infrastructure for route optimization and compliance management. Insurance premiums have increased by 65% following multiple safety incidents. The company has been slow to adapt to electronic logging device requirements, risking regulatory penalties.",
-        "label": 1
+        "label": 0
     },
     {
         "text": "The pharmaceutical research firm has multiple promising compounds in phase II clinical trials. Their proprietary drug delivery system has applications across various therapeutic areas. The company has established partnership agreements with major pharmaceutical manufacturers for commercialization. Intellectual property protection extends beyond 2035 for core technologies. The research team includes scientists with successful track records in bringing drugs to market. Their capital structure includes sufficient funding to reach significant development milestones before requiring additional investment.",
@@ -157,7 +157,7 @@
     },
     {
         "text": "The event management company has been severely impacted by restrictions on large gatherings with no contingency business model. Their contract terms have resulted in significant refund obligations for canceled events. The business carries high fixed costs including warehouse space for equipment and permanent staff. They face increasing competition from venues offering in-house planning services at competitive rates. The company's technology platform lacks virtual event capabilities increasingly demanded by clients. Cash reserves have been depleted managing through extended periods of minimal revenue.",
-        "label": 1
+        "label": 0
     },
     {
         "text": "The software development consultancy maintains expertise in technologies experiencing sustained high demand. Their project management methodology consistently delivers within scope, budget and timeline expectations. The company has cultivated relationships with technology vendors that provide early access to new platforms. Their recruiting process successfully identifies candidates with both technical skills and client communication abilities. The business operates with a distributed team model that enables access to global talent while minimizing office overhead expenses. Client satisfaction metrics show 92% would engage their services again.",
@@ -189,7 +189,7 @@
     },
     {
         "text": "Financial records show the language school has experienced steadily declining enrollment for eight consecutive quarters. Their curriculum has not been substantially updated to incorporate modern language acquisition techniques. The company's facilities require significant renovation with peeling paint and outdated furnishings. Instructor qualifications lag behind competing institutions, affecting educational outcomes. The business has been slow to develop online learning options despite clear market demand. Fixed costs remain high while revenue continues to decrease, creating unsustainable financial dynamics.",
-        "label": 1
+        "label": 0
     },
     {
         "text": "The manufacturing company has implemented lean production methods, reducing waste by 35% and improving margins. Their customer base spans multiple industries, providing resilience against sector-specific downturns. The business has negotiated favorable terms with suppliers, including extended payment periods that improve cash flow. Their quality control processes have resulted in defect rates below 0.5%, enhancing brand reputation. The company maintains a healthy balance sheet with a debt-to-EBITDA ratio of 1.2. Management has successfully developed second-tier leadership for smooth succession planning.",
@@ -229,7 +229,7 @@
     },
     {
         "text": "The fashion retailer has failed to establish effective omnichannel capabilities despite changing consumer shopping patterns. Inventory management issues have resulted in both stockouts of popular items and excess obsolete merchandise. The company's brand positioning has become confused through inconsistent marketing messages. Their store locations face declining foot traffic with lease obligations extending five more years. The business has experienced high turnover in design leadership, affecting product cohesion and appeal. Cash flow constraints have delayed vendor payments, damaging key supplier relationships.",
-        "label": 1
+        "label": 0
     },
     {
         "text": "The cloud infrastructure provider maintains redundant systems with 99.99% uptime reliability. Their service agreements include major enterprises with mission-critical applications. The company has achieved economies of scale that enable competitive pricing while maintaining strong margins. Their security protocols exceed industry standards, facilitating compliance for regulated industry clients. The business has established a clear technology roadmap aligned with emerging client requirements. Their sales approach emphasizes consultative relationships rather than transactional interactions.",
@@ -269,7 +269,7 @@
     },
     {
         "text": "The home healthcare provider has experienced high caregiver turnover, exceeding 60% annually and affecting service consistency. Their reimbursement rates have declined as insurance companies and government programs implement cost containment measures. The company faces increasing compliance requirements without corresponding systems to ensure adherence. Their scheduling inefficiencies result in excessive overtime and unbillable travel time. The business lacks differentiation in a market with low barriers to entry and increasing competition. Management has been unable to implement technology solutions to improve operational efficiency.",
-        "label": 1
+        "label": 0
     },
     {
         "text": "The organic food distributor has established direct relationships with over 200 local farms, ensuring supply chain resilience. Their cold chain logistics system maintains product quality with temperature deviation rates below 0.3%. The company has successfully expanded into institutional markets including schools and hospitals. Their inventory management system reduces waste to less than 2% of perishable goods. The business operates with a negative cash conversion cycle due to favorable supplier and customer payment terms. Management has implemented sustainability initiatives that resonate with their target demographic.",

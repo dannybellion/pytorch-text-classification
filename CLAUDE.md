@@ -2,9 +2,7 @@
 
 ## Project Commands
 - Install: `uv add`
-- Lint: `ruff check src tests`
 - Type check: `mypy src tests`
-- Format code: `ruff format src tests`
 - Run tests: `pytest tests`
 - Run single test: `pytest tests/path/to/test.py::test_name -v`
 - Train model: `python -m src.train`
@@ -12,7 +10,7 @@
 ## Code Style Guidelines
 - Use Python 3.11+ features
 - Using UV as a package manager
-- Format with Ruff
+- Format according to flake8 
 - Sort imports with isort
 - Use type annotations for all functions and class attributes
 - Follow PEP 8 naming conventions (snake_case for functions/variables, PascalCase for classes)
