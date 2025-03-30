@@ -11,7 +11,7 @@ from src.logging.logging import log_panel, log_metrics, log_progress, log_print
 from src.config import Hyperparameters
 from src.data_preprocessing.dataset import create_dataloaders, load_dataset, split_dataset
 from src.evaluation.evaluate import get_basic_metrics, generate_detailed_evaluation
-from src.training.model import TinyBERTClassifier
+from src.training.model import DistilBERTClassifier
 from src.training.device import get_device
 
 
@@ -235,7 +235,7 @@ def main(args: Hyperparameters):
         batch_size=args.batch_size
     )
     
-    model = TinyBERTClassifier(model_name=args.model_name)
+    model = DistilBERTClassifier(model_name=args.model_name)
     model.to(device)
     
     optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)

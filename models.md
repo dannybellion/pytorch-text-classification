@@ -1,7 +1,3 @@
-# TinyDeBERTa
-"microsoft/deberta-v3-xsmall"            # ~22M params
-"microsoft/deberta-v3-small"             # ~44M params
-
 # MiniLM
 "microsoft/MiniLM-L12-H384-uncased"      # ~33M params
 

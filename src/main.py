@@ -3,19 +3,17 @@ from src.training.train import main as train_main
 import argparse
 from src.config import Hyperparameters
 
-# Recommended Hugging Face model paths:
 
 def main():
     """Main function to train the model."""
     
     log_panel(
         colour="magenta",
-        body="TinyBERT Loan Default Classification", 
+        body="DistilBERT Loan Default Classification", 
     )
 
     HYPERPARAMETERS = Hyperparameters(
-        num_epochs=5,
-        model_name="microsoft/deberta-v3-xsmall"
+        num_epochs=6
     )
     
     log_hyperparameters(HYPERPARAMETERS)

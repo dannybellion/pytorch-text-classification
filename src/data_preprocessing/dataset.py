@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, DebertaV2Tokenizer
 
 
 def load_dataset(data_path: str) -> pd.DataFrame:
@@ -48,7 +48,7 @@ def split_dataset(
 class LoanDefaultDataset(Dataset):
     """Dataset class for loan default classification."""
     
-    def __init__(self, texts: List[str], labels: List[int], tokenizer_name: str = "huawei-noah/TinyBERT_General_6L_768D"):
+    def __init__(self, texts: List[str], labels: List[int], tokenizer_name: str = "distilbert/distilbert-base-uncased"):
         """Initialize the dataset.
         
         Args:
@@ -58,7 +58,11 @@ class LoanDefaultDataset(Dataset):
         """
         self.texts = texts
         self.labels = labels
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+        # Use DebertaV2Tokenizer directly for microsoft/deberta-v3-xsmall to avoid protobuf issues
+        if "deberta" in tokenizer_name.lower():
+            self.tokenizer = DebertaV2Tokenizer.from_pretrained(tokenizer_name)
+        else:
+            self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
         
     def __len__(self) -> int:
         """Return the number of samples in the dataset."""
@@ -97,7 +101,7 @@ class LoanDefaultDataset(Dataset):
 def create_dataloaders(
     train_df: pd.DataFrame,
     test_df: pd.DataFrame,
-    tokenizer_name: str = "huawei-noah/TinyBERT_General_6L_768D",
+    tokenizer_name: str = "distilbert/distilbert-base-uncased",
     batch_size: int = 8
 ) -> Tuple[DataLoader, DataLoader]:
     """Create PyTorch DataLoaders for train and test sets.
@@ -111,6 +115,11 @@ def create_dataloaders(
     Returns:
         Tuple of (train_loader, test_loader)
     """
+    import os
+    
+    # Set tokenizers parallelism explicitly to avoid warnings
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
+    
     train_dataset = LoanDefaultDataset(
         texts=train_df["text"].tolist(),
         labels=train_df["label"].tolist(),

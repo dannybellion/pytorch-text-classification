@@ -8,11 +8,11 @@ class Hyperparameters:
     output_dir: str = "models"
     
     # Model configuration
-    model_name: str = "huawei-noah/TinyBERT_General_6L_768D"
+    model_name: str = "distilbert/distilbert-base-uncased"
     
     # Training hyperparameters
     batch_size: int = 8
     learning_rate: float = 3e-5
     num_epochs: int = 2
     test_size: float = 0.4
-    early_stop_threshold: float = 0.1
+    early_stop_threshold: float = 0.05

@@ -1,4 +1,4 @@
-"""TinyBERT model for text classification."""
+"""DistilBERT model for text classification."""
 import warnings
 from typing import Dict, Optional, Tuple, Union
 
@@ -9,19 +9,20 @@ from transformers import AutoModelForSequenceClassification, logging as transfor
 # Suppress specific Hugging Face warnings
 transformers_logging.set_verbosity_error()
 warnings.filterwarnings("ignore", message="Some weights of BertForSequenceClassification were not initialized")
+warnings.filterwarnings("ignore", message="Some weights of DistilBertForSequenceClassification were not initialized")
 
 
-class TinyBERTClassifier(nn.Module):
-    """TinyBERT-based classifier for loan default prediction."""
+class DistilBERTClassifier(nn.Module):
+    """DistilBERT-based classifier for loan default prediction."""
     
     def __init__(
         self, 
-        model_name: str = "huawei-noah/TinyBERT_General_6L_768D", num_labels: int = 2
+        model_name: str = "distilbert/distilbert-base-uncased", num_labels: int = 2
         ):
-        """Initialize the TinyBERT classifier.
+        """Initialize the transformer classifier.
         
         Args:
-            model_name: Name of the pre-trained TinyBERT model
+            model_name: Name of the pre-trained transformer model
             num_labels: Number of output classes
         """
         super().__init__()
