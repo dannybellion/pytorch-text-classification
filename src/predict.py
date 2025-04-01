@@ -1,17 +1,17 @@
-"""Script for making predictions using a trained TinyBERT model."""
+"""Script for making predictions using a trained DistilBERT model."""
 from pathlib import Path
 from typing import Dict, List, Union
 
 import torch
 from transformers import AutoTokenizer
 
-from src.training.model import TinyBERTClassifier
+from src.training.model import DistilBERTClassifier
 
 
 # Define prediction configuration here
 PREDICTION_CONFIG = {
     "model_path": "models/best_model.pt",
-    "model_name": "huawei-noah/TinyBERT_General_6L_768D",
+    "model_name": "distilbert/distilbert-base-uncased",
     "input_file": None,  # Set to a file path to batch process texts, or None for interactive mode
 }
 
@@ -104,7 +104,7 @@ def main():
         return
     
     # Load model
-    model = TinyBERTClassifier(model_name=PREDICTION_CONFIG["model_name"])
+    model = DistilBERTClassifier(model_name=PREDICTION_CONFIG["model_name"])
     model.load_state_dict(torch.load(model_path, map_location=device)["model_state_dict"])
     model.to(device)
     

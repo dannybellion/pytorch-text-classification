@@ -2,16 +2,16 @@
 import pytest
 import torch
 
-from src.training.model import TinyBERTClassifier
+from src.training.model import DistilBERTClassifier
 
 
 @pytest.mark.parametrize("num_labels", [2, 3])
-def test_tinybert_classifier_initialization(num_labels):
-    """Test initialization of TinyBERTClassifier."""
+def test_distilbert_classifier_initialization(num_labels):
+    """Test initialization of DistilBERTClassifier."""
     # Skip this test if running in CI environment without internet access
     # to download pre-trained models
     try:
-        model = TinyBERTClassifier(num_labels=num_labels)
+        model = DistilBERTClassifier(num_labels=num_labels)
         
         # Check if model is created
         assert model is not None
@@ -23,10 +23,10 @@ def test_tinybert_classifier_initialization(num_labels):
 
 
 def test_model_forward_pass():
-    """Test forward pass of TinyBERTClassifier."""
+    """Test forward pass of DistilBERTClassifier."""
     # Skip this test if running in CI environment without internet access
     try:
-        model = TinyBERTClassifier()
+        model = DistilBERTClassifier()
         
         # Create dummy inputs
         batch_size = 2

@@ -1,7 +1,7 @@
 [project]
 name = "text-classification"
 version = "0.1.0"
-description = "Fine-tuning TinyBERT for text classification of loan defaults"
+description = "Fine-tuning DistilBERT for text classification of loan defaults"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

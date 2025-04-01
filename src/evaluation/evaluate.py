@@ -1,4 +1,4 @@
-"""Evaluation functions for the TinyBERT classifier."""
+"""Evaluation functions for the DistilBERT classifier."""
 from pathlib import Path
 from typing import Dict, List
 

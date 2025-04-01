@@ -1,15 +1,15 @@
-# Text Classification Using TinyBERT
+# Text Classification Using DistilBERT
 
-This project demonstrates how to fine-tune a TinyBERT model for text classification of loan defaults. 
+This project demonstrates how to fine-tune a DistilBERT model for text classification of loan defaults. 
 
 ## Project Overview
 
-TinyBERT is a smaller, faster version of BERT that maintains comparable performance while reducing model size and computational requirements. This project uses TinyBERT to predict whether a business will default on a loan based on textual data.
+DistilBERT is a smaller, faster version of BERT that maintains comparable performance while reducing model size and computational requirements. This project uses DistilBERT to predict whether a business will default on a loan based on textual data.
 
 ## Features
 
-- Fine-tune TinyBERT for binary text classification
-- Dataset of 50 business descriptions with default/no-default labels
+- Fine-tune DistilBERT for binary text classification
+- Dataset of 80 business descriptions with default/no-default labels
 - Complete pipeline from data preprocessing to model evaluation
 - Easy-to-use interactive interface with hardcoded hyperparameters
 
@@ -34,10 +34,10 @@ Dummy dataset contains a list of 80 entries, each with:
 
 ### Training and Evaluation
 
-The hyperparameters are hardcoded at the top of `src/main.py`. You can run the project with:
+You can run the project with:
 
 ```bash
-python -m src.main
+uv run -m src.main
 ```
 
 This will:
@@ -53,7 +53,7 @@ Load the best model and evaluate it on the test set. Print out the test loss and
 To make predictions on new texts, use:
 
 ```bash
-python -m src.predict
+uv run -m src.predict
 ```
 
 This will start an interactive mode where you can enter business descriptions and get predictions.
@@ -62,25 +62,25 @@ To batch process texts from a file, edit the `PREDICTION_CONFIG` at the top of `
 
 ## Customizing Hyperparameters
 
-To change hyperparameters, edit the `HYPERPARAMETERS` dictionary in `src/main.py`:
+To change hyperparameters, edit the `Hyperparameters` dataclass in `src/config.py`:
 
 ```python
-HYPERPARAMETERS = {
+@dataclass
+class Hyperparameters:
+    """Dataclass for storing model hyperparameters and configuration."""
     # Data paths
-    "data_path": "data/loan_default_dataset.json",
-    "output_dir": "models",
-    "eval_output_dir": "evaluation_results",
+    data_path: str = "data/loan_default_dataset.json"
+    output_dir: str = "models"
     
     # Model configuration
-    "model_name": "huawei-noah/TinyBERT_General_6L_768D",
+    model_name: str = "distilbert/distilbert-base-uncased"
     
     # Training hyperparameters
-    "batch_size": 16,
-    "learning_rate": 3e-5,
-    "num_epochs": 10,
-    "test_size": 0.2,
-    "val_size": 0.1,
-}
+    batch_size: int = 8
+    learning_rate: float = 3e-5
+    num_epochs: int = 2
+    test_size: float = 0.4
+    early_stop_threshold: float = 0.05
 ```
 
 ## Project Structure
@@ -88,13 +88,15 @@ HYPERPARAMETERS = {
 ```
 text-classification/
 ├── data/
-│   └── loan_default_dataset.json  # Dataset with 50 samples
+│   └── loan_default_dataset.json  # Dataset with 80 samples
 ├── src/
+│   ├── config.py                  # Hyperparameters configuration
 │   ├── data_preprocessing/        # Data loading and processing
 │   ├── training/                  # Model definition and training
 │   ├── evaluation/                # Model evaluation
+│   ├── logging/                   # Logging utilities
 │   ├── predict.py                 # Inference script
-│   └── main.py                    # Main entry point with hardcoded hyperparameters
+│   └── main.py                    # Main entry point
 ├── tests/                         # Unit tests
 ├── pyproject.toml                 # Project configuration
 └── README.md                      # Project documentation
