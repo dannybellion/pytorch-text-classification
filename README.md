@@ -1,6 +1,6 @@
 # Text Classification Using DistilBERT
 
-This project demonstrates how to fine-tune a DistilBERT model for text classification of loan defaults. 
+This project demonstrates how to fine-tune a DistilBERT model using pytorch for text classification of loan defaults. 
 
 ## Project Overview
 
